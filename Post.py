@@ -1,8 +1,13 @@
 import datetime
 import os
+import re
+import yaml
+
+from FrontMatter import FrontMatter
 
 
 class Post:
+    title: str
     size: int
     ctime: datetime
     mtime: datetime
@@ -27,24 +32,45 @@ class Post:
         self.mtime = self.format2datetime(file_stat_info.st_mtime)
         self.title = os.path.basename(self.file_path).split('.')[0]
 
+        return self
         print(self.__getattribute__('title'))
 
-    def get_ctime(self):
-        pass
+    def load_front_matter(self):
+        with open(self.file_path, 'r', encoding='UTF-8') as f:
+            self.content = f.read()
 
-    def get_mtime(self):
-        pass
+        # print(content)
+        res = re.findall('---(.*?)---', self.content, re.S)
+        # print(res[0])
+        if len(res):
+            # print(1)
+            return res[0]
+        else:
+            return ""
 
-    def get_front_matter(self):
-        pass
+    def format_matter(self):
+        content = self.load_front_matter()
+        # print(content)
+        matter = FrontMatter(content)
+        self.res_matter = FrontMatter(content) \
+            .set_attr(self.title, self.ctime, self.mtime, [], []) \
+            .merge_matter() \
+            .toYaml()
+        self.res_matter = '---\n' + self.res_matter + '---\n\n'
+        if content == '':
+            self.new_content = self.res_matter + self.content
+        else:
+            self.new_content = re.sub('---(.*?)---\\s+',self.res_matter,self.content,1,re.S)
 
-    def get_title(self):
-        pass
+        print(self.new_content)
+        return self
 
-    def get_author(self):
-        pass
+    def save(self):
+        with open(self.file_path,'w',encoding='UTF-8') as f:
+            f.write(self.new_content)
+
 
 
 if __name__ == '__main__':
     post = Post('./mysql数据库优化.md')
-    post.read_file_info()
+    post.read_file_info().format_matter().save()
