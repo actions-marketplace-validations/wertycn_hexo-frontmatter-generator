@@ -1,12 +1,11 @@
 ---
-title : Mysql数据库常见优化方向
-comments: true #是否可评论
-toc: true #是否显示文章目录
-categories:  #分类
-    - Mysql
-    - 优化
-tags:  [Mysql,优化]
+categories: []
+date: 2020-07-15 10:14:18.567000
+tags: []
+title: mysql数据库优化
+updated: 2020-07-15 12:39:43.218000
 ---
+
 Mysql数据库常见优化方向
 
 数据表数据类型优化

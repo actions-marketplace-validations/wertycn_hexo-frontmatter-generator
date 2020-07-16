@@ -1,9 +1,9 @@
 import datetime
 import os
 import re
-import yaml
 
 from FrontMatter import FrontMatter
+from util import Util
 
 
 class Post:
@@ -15,7 +15,7 @@ class Post:
 
     def __init__(self, file_path):
         self.file_path = file_path
-
+        self.util = Util()
         pass
 
     def format2datetime(self, timestamp):
@@ -31,13 +31,17 @@ class Post:
         self.ctime = self.format2datetime(file_stat_info.st_ctime)
         self.mtime = self.format2datetime(file_stat_info.st_mtime)
         self.title = os.path.basename(self.file_path).split('.')[0]
+        with open(self.file_path, 'r', encoding='UTF-8') as f:
+            self.content = f.read()
+            # self.content_post =
+            self.content_post = re.sub('---(.*?)---\\s+','', self.content, 1, re.S)
+
+        self.tags = self.get_tags()
 
         return self
         print(self.__getattribute__('title'))
 
     def load_front_matter(self):
-        with open(self.file_path, 'r', encoding='UTF-8') as f:
-            self.content = f.read()
 
         # print(content)
         res = re.findall('---(.*?)---', self.content, re.S)
@@ -60,17 +64,21 @@ class Post:
         if content == '':
             self.new_content = self.res_matter + self.content
         else:
-            self.new_content = re.sub('---(.*?)---\\s+',self.res_matter,self.content,1,re.S)
-
+            self.new_content = re.sub('---(.*?)---\\s+', self.res_matter, self.content, 1, re.S)
         print(self.new_content)
         return self
 
     def save(self):
-        with open(self.file_path,'w',encoding='UTF-8') as f:
+        with open(self.file_path, 'w', encoding='UTF-8') as f:
             f.write(self.new_content)
 
+    def get_tags(self):
+        tags = self.util.label(self.title, self.content_post)
+        print(tags)
+        pass
 
 
 if __name__ == '__main__':
     post = Post('./mysql数据库优化.md')
-    post.read_file_info().format_matter().save()
+    post.read_file_info()
+        # .format_matter().save()

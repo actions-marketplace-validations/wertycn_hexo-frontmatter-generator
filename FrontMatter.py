@@ -6,7 +6,10 @@ class FrontMatter:
 
     def __init__(self, content):
         pass
-        self.old_matter_data = self.yaml2data(content)
+        if content != '':
+            self.old_matter_data = self.yaml2data(content)
+        else:
+            self.old_matter_data = {}
 
     def set_attr(self, title, ctime, rtime, categories, tags):
         self.new_matter_data = {
@@ -28,11 +31,9 @@ class FrontMatter:
     def yaml2data(self, content):
         return yaml.load(content)
 
-    def data2yaml(self,data):
-        return yaml.dump(data,allow_unicode=True)
+    def data2yaml(self, data):
+        return yaml.dump(data, allow_unicode=True)
 
     def toYaml(self):
         content = self.data2yaml(self.res_matter_data)
         return content
-
-
