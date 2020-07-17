@@ -1,7 +1,14 @@
 ---
 categories: []
 date: 2020-07-15 10:14:18.567000
-tags: []
+tags:
+- mysql
+- 大数据
+- sql优化
+- 数据库
+- mysql数据库
+- 数据库优化
+- enum
 title: mysql数据库优化
 updated: 2020-07-15 12:39:43.218000
 ---

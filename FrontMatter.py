@@ -8,6 +8,11 @@ class FrontMatter:
         pass
         if content != '':
             self.old_matter_data = self.yaml2data(content)
+            if 'tags' in self.old_matter_data and self.old_matter_data['tags'] == []:
+                self.old_matter_data.pop('tags')
+
+
+
         else:
             self.old_matter_data = {}
 
@@ -19,13 +24,15 @@ class FrontMatter:
             'categories': categories,
             'tags': tags
         }
+        print(self.new_matter_data)
         return self
 
     def merge_matter(self):
-        print(self.old_matter_data)
-        print(self.new_matter_data)
+        # print(self.old_matter_data)
+        # print(self.new_matter_data)
+        if 'tags' in self.old_matter_data:
+            self.new_matter_data['tags'].extend(self.old_matter_data['tags'])
         self.res_matter_data = dict(self.new_matter_data, **self.old_matter_data)
-        print(self.res_matter_data)
         return self
 
     def yaml2data(self, content):

@@ -34,30 +34,24 @@ class Post:
         with open(self.file_path, 'r', encoding='UTF-8') as f:
             self.content = f.read()
             # self.content_post =
-            self.content_post = re.sub('---(.*?)---\\s+','', self.content, 1, re.S)
+            self.content_post = re.sub('---(.*?)---\\s+', '', self.content, 1, re.S)
 
         self.tags = self.get_tags()
-
         return self
-        print(self.__getattribute__('title'))
 
     def load_front_matter(self):
 
         # print(content)
         res = re.findall('---(.*?)---', self.content, re.S)
-        # print(res[0])
         if len(res):
-            # print(1)
             return res[0]
         else:
             return ""
 
     def format_matter(self):
         content = self.load_front_matter()
-        # print(content)
-        matter = FrontMatter(content)
         self.res_matter = FrontMatter(content) \
-            .set_attr(self.title, self.ctime, self.mtime, [], []) \
+            .set_attr(self.title, self.ctime, self.mtime, [], self.tags) \
             .merge_matter() \
             .toYaml()
         self.res_matter = '---\n' + self.res_matter + '---\n\n'
@@ -65,7 +59,6 @@ class Post:
             self.new_content = self.res_matter + self.content
         else:
             self.new_content = re.sub('---(.*?)---\\s+', self.res_matter, self.content, 1, re.S)
-        print(self.new_content)
         return self
 
     def save(self):
@@ -73,12 +66,17 @@ class Post:
             f.write(self.new_content)
 
     def get_tags(self):
-        tags = self.util.label(self.title, self.content_post)
-        print(tags)
-        pass
+        tag_item = self.util.label(self.title, self.content_post.replace('\u200b', ''))
+        tags = []
+
+        if 'items' in tag_item:
+            for item in tag_item['items']:
+                tags.append(item['tag'])
+            return tags
+        else:
+            return []
 
 
 if __name__ == '__main__':
     post = Post('./mysql数据库优化.md')
-    post.read_file_info()
-        # .format_matter().save()
+    post.read_file_info().format_matter().save()
