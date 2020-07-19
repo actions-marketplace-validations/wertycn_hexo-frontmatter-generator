@@ -6,33 +6,31 @@ class FrontMatter:
 
     def __init__(self, content):
         pass
-        if content != '':
-            self.old_matter_data = self.yaml2data(content)
-            if 'tags' in self.old_matter_data and self.old_matter_data['tags'] == []:
-                self.old_matter_data.pop('tags')
-
-
-
+        if content != '' and content != None:
+            self.old_matter_data = content
         else:
             self.old_matter_data = {}
 
     def set_attr(self, title, ctime, rtime, categories, tags):
-        self.new_matter_data = {
+        self.auto_get_matter = {
             'title': title,
             'date': ctime,
             'updated': rtime,
             'categories': categories,
-            'tags': tags
+            'tags': tags,
+            'auto_generate': True
         }
-        print(self.new_matter_data)
+        # print('new matter', self.auto_get_matter)
         return self
 
     def merge_matter(self):
-        # print(self.old_matter_data)
-        # print(self.new_matter_data)
         if 'tags' in self.old_matter_data:
-            self.new_matter_data['tags'].extend(self.old_matter_data['tags'])
-        self.res_matter_data = dict(self.new_matter_data, **self.old_matter_data)
+            self.old_matter_data['tags'] = list(set(self.old_matter_data['tags'] + self.auto_get_matter['tags']))
+
+        if 'categories' in self.auto_get_matter and 'categories' in self.old_matter_data:
+            self.old_matter_data.pop('categories')
+
+        self.res_matter_data = dict(self.auto_get_matter, **self.old_matter_data)
         return self
 
     def yaml2data(self, content):
