@@ -44,8 +44,11 @@ class FrontMatterTool:
 
 if __name__ == '__main__':
     params = sys.argv
-    print(params)
+    print('params', params)
     if len(params) > 1 and os.path.exists(params[1]) and os.path.isdir(params[1]):
         tool = FrontMatterTool(params[1]).run()
     else:
+        print('os.path.exists(params[1])', os.path.exists(params[1]))
+        print('os.path.isdir(params[1]', os.path.isdir(params[1]))
+
         raise Exception("未获取到有效参数")
