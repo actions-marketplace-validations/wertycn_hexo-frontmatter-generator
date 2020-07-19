@@ -44,6 +44,7 @@ class FrontMatterTool:
 
 if __name__ == '__main__':
     params = sys.argv
+    print(params)
     if len(params) > 1 and os.path.exists(params[1]) and os.path.isdir(params[1]):
         tool = FrontMatterTool(params[1]).run()
     else:
