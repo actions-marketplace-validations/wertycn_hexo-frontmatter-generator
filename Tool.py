@@ -1,4 +1,6 @@
 import os
+import sys
+
 import Post
 
 
@@ -12,7 +14,7 @@ class FrontMatterTool:
         """
         self.post_dir = post_dir
 
-    def get_all_post_file(self,post_dir):
+    def get_all_post_file(self, post_dir):
         """
         获取所有markdown文件
         :param file_path:
@@ -40,11 +42,9 @@ class FrontMatterTool:
             print('complete!')
 
 
-
 if __name__ == '__main__':
-    # params = sys.argv
-    # if len(params) > 1 and os.path.exists(params[1]) and os.path.isdir(params[1]):
-    #     print(params[1])
-    # Post.Post('', categories).run()
-    tool = FrontMatterTool('D:/dev/blog/source_blog/_posts')
-    tool.run()
+    params = sys.argv
+    if len(params) > 1 and os.path.exists(params[1]) and os.path.isdir(params[1]):
+        tool = FrontMatterTool(params[1]).run()
+    else:
+        raise Exception("未获取到有效参数")
