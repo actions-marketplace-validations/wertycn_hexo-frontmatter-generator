@@ -146,4 +146,7 @@ def main():
     tool = FrontMatterTool(post_dir).run()
 
 if __name__ == "__main__":
-    main()
+    # os.environ['BAIDU_NLP_APPID']=''
+    # os.environ['BAIDU_NLP_APPID']=''
+    # os.environ['BAIDU_NLP_APPID']=''
+    FrontMatterTool("tests/").run()
