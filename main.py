@@ -1,11 +1,14 @@
+import datetime
 import os
 import re
-import sys
+from pathlib import Path
+from typing import Dict, Any
+from frontmatter import Post as FrontmatterPost
+
+import frontmatter
 import yaml
-import datetime
-import requests
-from typing import List, Dict, Any
 from aip import AipNlp
+
 
 class ContextTagHandler:
     aip_client = None
@@ -21,39 +24,49 @@ class ContextTagHandler:
 
     @classmethod
     def label(cls, title, content):
-        return cls.get_aip_client().keyword(title, content, options={})
+        try:
+            response = cls.get_aip_client().keyword(title, content, options={})
+            if response.get('error_code'):
+                print(f"Error in Baidu NLP API: {response.get('error_msg')}")
+                return []
+            else:
+                # 提取标签
+                tags = [item['tag'] for item in response.get('items', [])]
+                return tags
+        except Exception as e:
+            print(f"An exception occurred when calling Baidu NLP API: {e}")
+            return []
+
 
 class FrontMatter:
-    def __init__(self, content: Dict[str, Any]) -> None:
-        self.old_matter_data = content or {}
-        self.res_matter_data = {}
+    def __init__(self, post: FrontmatterPost) -> None:
+        self.post = post
 
     def set_attr(self, title, ctime, rtime, categories, tags):
-        self.auto_get_matter = {
+        self.post.metadata.update({
             'title': title,
-            'date': ctime,
-            'updated': rtime,
+            'date': ctime.strftime("%Y-%m-%d %H:%M:%S"),
+            'updated': rtime.strftime("%Y-%m-%d %H:%M:%S"),
             'categories': categories,
             'tags': tags,
             'auto_generate': True
-        }
+        })
         return self
 
     def merge_matter(self):
-        if 'tags' in self.old_matter_data:
-            self.old_matter_data['tags'] = list(set(self.old_matter_data['tags'] + self.auto_get_matter['tags']))
-
-        if 'categories' in self.auto_get_matter and 'categories' in self.old_matter_data:
-            self.old_matter_data.pop('categories')
-
-        self.res_matter_data = dict(self.auto_get_matter, **self.old_matter_data)
+        if 'tags' in self.post.metadata:
+            self.post.metadata['tags'] = list(set(self.post.metadata['tags'] + self.post.metadata.get('tags', [])))
+        if 'categories' in self.post.metadata:
+            self.post.metadata.pop('categories')
         return self
 
-    def to_yaml(self):
-        return yaml.dump(self.res_matter_data, allow_unicode=True)
+    def to_string(self):
+        return frontmatter.dumps(self.post)
 
 class Post:
-    def __init__(self, file_path, categories):
+    def __init__(self, file_path: Path, categories):
+        self.content_post = None
+        self.front_matter_dict = None
         self.file_path = file_path
         self.util = ContextTagHandler
         self.categories = categories
@@ -62,7 +75,7 @@ class Post:
         return datetime.datetime.fromtimestamp(timestamp)
 
     def load_base_info(self):
-        file_stat_info = os.stat(self.file_path)
+        file_stat_info = os.stat(Path(self.file_path))
         self.size = file_stat_info.st_size
         self.ctime = self.format2datetime(file_stat_info.st_ctime)
         self.mtime = self.format2datetime(file_stat_info.st_mtime)
@@ -74,27 +87,20 @@ class Post:
         return self
 
     def set_tags(self):
-        self.tags = self.util.label(self.title, self.content_post.replace('\u200b', ''))
+        tags = self.util.label(self.title, self.content_post.replace('\u200b', ''))
+        self.tags = tags if isinstance(tags, list) else [tags]
         return self
 
     def load_front_matter(self):
-        res = re.findall('---(.*?)---', self.content, re.S)
-        if len(res):
-            self.front_matter_text = res[0]
-        else:
-            self.front_matter_text = ""
-        self.front_matter_dict = yaml.load(self.front_matter_text, Loader=yaml.FullLoader)
+        with open(self.file_path, 'r', encoding='UTF-8') as f:
+            self.post = frontmatter.load(f)
         return self
 
     def format_matter(self):
-        new_front_matter = FrontMatter(self.front_matter_dict).set_attr(
+        new_front_matter = FrontMatter(self.post).set_attr(
             self.title, self.ctime, self.mtime, self.categories, self.tags
-        ).merge_matter().to_yaml()
-        self.new_front_matter_text = '---\n' + new_front_matter + '---\n\n'
-        if self.front_matter_text == '':
-            self.new_content = self.new_front_matter_text + self.content
-        else:
-            self.new_content = re.sub('---(.*?)---\\s+', self.new_front_matter_text, self.content, 1, re.S)
+        ).merge_matter().to_string()
+        self.new_content = new_front_matter
         return self
 
     def save(self):
@@ -116,37 +122,31 @@ class Post:
             self.set_tags().format_matter().save()
         return self
 
+
 class FrontMatterTool:
     def __init__(self, post_dir):
         self.post_dir = post_dir
 
     def get_all_post_file(self, post_dir):
-        os.chdir(post_dir)
-        all_file = os.listdir()
+        post_path = Path(post_dir)
         files = []
-        for f in all_file:
-            if os.path.isdir(f):
-                files.extend(self.get_all_post_file(post_dir + '/' + f))
-                os.chdir(post_dir)
-            else:
-                if os.path.splitext(f)[-1][1:] == 'md':
-                    files.append(post_dir + '/' + f)
+        for f in post_path.glob('**/*.md'):
+            files.append(str(f))
         return files
 
     def run(self):
         start = len(self.post_dir)
         files = self.get_all_post_file(self.post_dir)
         for file in files:
-            categories = file[start:].split('/')[1:-1]
+            categories = Path(file).relative_to(self.post_dir).parts[:-1]
             Post(file, categories).run()
         return self
+
 
 def main():
     post_dir = os.getenv("POSTS_DIRECTORY")
     tool = FrontMatterTool(post_dir).run()
 
+
 if __name__ == "__main__":
-    # os.environ['BAIDU_NLP_APPID']=''
-    # os.environ['BAIDU_NLP_APPID']=''
-    # os.environ['BAIDU_NLP_APPID']=''
-    FrontMatterTool("tests/").run()
+    FrontMatterTool("tests").run()

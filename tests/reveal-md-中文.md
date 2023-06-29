@@ -1,3 +1,17 @@
+---
+auto_generate: true
+date: '2023-06-27 01:47:46'
+tags:
+- reveal
+- 软件
+- bash
+- 幻灯片
+- markdown
+- docker
+title: reveal-md-中文
+updated: '2023-06-30 01:24:45'
+---
+
 # reveal-md 中文文档
 
 将Markdown文件转换为漂亮的reveal.js演示文稿。
