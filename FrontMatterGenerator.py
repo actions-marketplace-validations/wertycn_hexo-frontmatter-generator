@@ -2,12 +2,10 @@ import datetime
 import os
 import re
 from pathlib import Path
-from typing import Dict, Any
-from frontmatter import Post as FrontmatterPost
 
 import frontmatter
-import yaml
 from aip import AipNlp
+from  frontmatter import Post as FrontmatterPost
 
 
 class ContextTagHandler:
@@ -15,7 +13,7 @@ class ContextTagHandler:
 
     @classmethod
     def get_aip_client(cls):
-        if cls.aip_client == None:
+        if cls.aip_client is None:
             cls.appid = os.getenv("BAIDU_NLP_APPID")
             cls.ak = os.getenv("BAIDU_NLP_AK")
             cls.sk = os.getenv("BAIDU_NLP_SK")
@@ -27,15 +25,24 @@ class ContextTagHandler:
         try:
             response = cls.get_aip_client().keyword(title, content, options={})
             if response.get('error_code'):
-                print(f"Error in Baidu NLP API: {response.get('error_msg')}")
-                return []
+                message = f"Error in Baidu NLP API: {response.get('error_msg')}"
+                return {
+                    "msg": message,
+                    "tags": []
+                }
             else:
                 # 提取标签
                 tags = [item['tag'] for item in response.get('items', [])]
-                return tags
+                return {
+                    "msg": "",
+                    "tags": tags
+                }
         except Exception as e:
-            print(f"An exception occurred when calling Baidu NLP API: {e}")
-            return []
+            response = f"An exception occurred when calling Baidu NLP API: {e}"
+            return {
+                "msg": message,
+                "tags": []
+            }
 
 
 class FrontMatter:
@@ -54,8 +61,6 @@ class FrontMatter:
         return self
 
     def merge_matter(self):
-        if 'tags' in self.post.metadata:
-            self.post.metadata['tags'] = list(set(self.post.metadata['tags'] + self.post.metadata.get('tags', [])))
         if 'categories' in self.post.metadata:
             self.post.metadata.pop('categories')
         return self
@@ -63,8 +68,10 @@ class FrontMatter:
     def to_string(self):
         return frontmatter.dumps(self.post)
 
+
 class Post:
     def __init__(self, file_path: Path, categories):
+        self.tags = []
         self.content_post = None
         self.front_matter_dict = None
         self.file_path = file_path
@@ -83,12 +90,36 @@ class Post:
         with open(self.file_path, 'r', encoding='UTF-8') as f:
             self.content = f.read()
             self.content_post = re.sub('---(.*?)---\\s+', '', self.content, 1, re.S)
-
         return self
 
+    def process_tags(self, tags):
+        if isinstance(tags, str):
+            if tags.strip():
+                return [tags]
+            else:
+                return []
+        elif isinstance(tags, list):
+            return tags
+        else:
+            return []
+
     def set_tags(self):
-        tags = self.util.label(self.title, self.content_post.replace('\u200b', ''))
-        self.tags = tags if isinstance(tags, list) else [tags]
+        # If 'auto_generate' field is not True or it does not exist, generate new tags
+        if self.is_update_needed():
+            res = self.util.label(self.title, self.content_post.replace('\u200b', ''))
+            tags = res['tags']
+            print(f"Post [{self.file_path}] tags=[{tags}], msg={res['msg']}")
+            new_tags = tags if isinstance(tags, list) else [tags]
+
+            # If there are existing tags, merge them with new tags while removing duplicates
+            existing_tags = self.process_tags(self.post.metadata.get('tags', []))
+            combined_tags = list(set(existing_tags + new_tags))
+
+            # Sort the tags in lexicographical order (alphabetical order in this case)
+            self.tags = sorted(combined_tags)
+        else:
+            # If we don't need to generate new tags, use the existing ones
+            self.tags = self.process_tags(self.post.metadata.get('tags', []))
         return self
 
     def load_front_matter(self):
@@ -108,22 +139,17 @@ class Post:
             f.write(self.new_content)
         return self
 
-    def is_update(self):
-        front_matter = self.front_matter_dict
-        if front_matter == None or 'auto_generate' not in front_matter or front_matter['auto_generate'] == False:
-            return True
-        if 'categories' in front_matter and front_matter['categories'] == self.categories:
-            return False
-        return True
+    def is_update_needed(self):
+        return 'auto_generate' not in self.post.metadata or not self.post.metadata['auto_generate']
 
     def run(self):
         self.load_base_info().load_front_matter()
-        if self.is_update():
+        if self.is_update_needed():
             self.set_tags().format_matter().save()
         return self
 
 
-class FrontMatterTool:
+class FrontMatterGenerator:
     def __init__(self, post_dir):
         self.post_dir = post_dir
 
@@ -135,7 +161,6 @@ class FrontMatterTool:
         return files
 
     def run(self):
-        start = len(self.post_dir)
         files = self.get_all_post_file(self.post_dir)
         for file in files:
             categories = Path(file).relative_to(self.post_dir).parts[:-1]
@@ -145,8 +170,8 @@ class FrontMatterTool:
 
 def main():
     post_dir = os.getenv("POSTS_DIRECTORY")
-    tool = FrontMatterTool(post_dir).run()
+    tool = FrontMatterGenerator(post_dir).run()
 
 
 if __name__ == "__main__":
-    FrontMatterTool("tests").run()
+    FrontMatterGenerator('D:/blog/source_blog/_posts').run()
