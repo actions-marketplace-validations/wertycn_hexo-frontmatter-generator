@@ -6,11 +6,18 @@ Hexo 博客 FrontMatter 生成器，自动为Markdown文章生成FrontMatter 信
 
 ```yaml
 ---
-title: My Post Title
-date: 2022-06-30
-tags: ['tag1', 'tag2', 'tag3']
-version: a3f2a0dccb20212
 auto_generate: true
+date: '2023-06-27 01:47:46'
+tags:
+- bash
+- docker
+- markdown
+- reveal
+- 幻灯片
+- 文档翻译 #自定义
+- 软件
+title: reveal-md-中文文档
+updated: '2023-07-02 23:03:42'
 ---
 ```
 
@@ -46,14 +53,11 @@ docker run -v $PWD:/data my_project -d /data/your_input_file_path
 你可以将这个项目作为一个 GitHub Action 在你的 workflow 中使用。在你的 workflow 文件中添加以下步骤：
 
 ```yaml
-- name: Run my project
+- name: generate frontmatter
   uses: wertycn/hexo-frontmatter-generator@master
   with:
     post_dir: ./posts
 ```
-
-请将 `your-github-username` 替换为你的 GitHub 用户名，将 `my-project` 替换为你的项目的仓库名，将 `v1` 替换为你想使用的版本标签，将 `your_input_file_path` 替换为你需要转换的文件路径。
-
 
 
 
