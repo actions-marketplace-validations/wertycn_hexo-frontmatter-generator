@@ -61,6 +61,17 @@ docker run -v $PWD:/data my_project -d /data/your_input_file_path
     BAIDU_NLP_AK: ${{ secrets.BAIDU_NLP_AK }}
     BAIDU_NLP_APPID: ${{ secrets.BAIDU_NLP_APPID }}
     BAIDU_NLP_SK: ${{ secrets.BAIDU_NLP_SK }}
+- name: 保存变动Front matter到仓库
+  run: |
+     cd $GITHUB_WORKSPACE/source_blog
+     date > generated.txt
+     git config user.name github-actions
+     git config user.email github-actions@github.com
+     git add .
+     date=`date`
+     git commit -m "auto update front matter $date"
+     git push
+     echo "推送完成"
 ```
 
 
