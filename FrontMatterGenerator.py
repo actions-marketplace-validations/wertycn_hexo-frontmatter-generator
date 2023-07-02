@@ -38,7 +38,7 @@ class ContextTagHandler:
                     "tags": tags
                 }
         except Exception as e:
-            response = f"An exception occurred when calling Baidu NLP API: {e}"
+            message = f"An exception occurred when calling Baidu NLP API: {e}"
             return {
                 "msg": message,
                 "tags": []
