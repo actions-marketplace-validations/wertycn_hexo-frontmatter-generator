@@ -1,4 +1,4 @@
-# Hexo-front-matter-generator
+# Hexo-frontmatter-generator
 
 Hexo 博客 FrontMatter 生成器，自动为Markdown文章生成FrontMatter 信息， 其中标签部分基于百度NLP API 对文章打标签来实现
 
@@ -16,13 +16,6 @@ auto_generate: true
 
 生成FrontMatter 信息后，继续执行将不再更新，如需更改请删除
 
-## 安装
-
-你可以通过pip来安装这个包:
-
-```bash
-pip install hexo-frontmatter-generator
-```
 
 ## 使用
 
@@ -31,7 +24,7 @@ pip install hexo-frontmatter-generator
 在命令行中运行 `main.py` 文件，并输入你需要转换的文件路径：
 
 ```bash
-python main.py --input_path your_input_file_path
+python FrontMatterGenerator.py -d your_post_dir
 ```
 
 ### Docker 使用
@@ -45,7 +38,7 @@ docker build -t my_project .
 然后，运行 Docker 镜像：
 
 ```bash
-docker run -v $PWD:/data my_project --input_path /data/your_input_file_path
+docker run -v $PWD:/data my_project -d /data/your_input_file_path
 ```
 
 ### GitHub Actions 使用
@@ -54,9 +47,9 @@ docker run -v $PWD:/data my_project --input_path /data/your_input_file_path
 
 ```yaml
 - name: Run my project
-  uses: your-github-username/my-project@v1
+  uses: wertycn/hexo-frontmatter-generator@master
   with:
-    input_path: your_input_file_path
+    post_dir: ./posts
 ```
 
 请将 `your-github-username` 替换为你的 GitHub 用户名，将 `my-project` 替换为你的项目的仓库名，将 `v1` 替换为你想使用的版本标签，将 `your_input_file_path` 替换为你需要转换的文件路径。
