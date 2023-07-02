@@ -16,4 +16,4 @@ runs:
   args:
     - ${{ inputs.post_dir }}
 
-  entrypoint: './bin'
+  entrypoint: '/app/bin/main.sh'

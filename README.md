@@ -57,6 +57,10 @@ docker run -v $PWD:/data my_project -d /data/your_input_file_path
   uses: wertycn/hexo-frontmatter-generator@master
   with:
     post_dir: ./posts
+  env:
+    BAIDU_NLP_AK: ${{ secrets.BAIDU_NLP_AK }}
+    BAIDU_NLP_APPID: ${{ secrets.BAIDU_NLP_APPID }}
+    BAIDU_NLP_SK: ${{ secrets.BAIDU_NLP_SK }}
 ```
 
 
