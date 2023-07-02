@@ -2,10 +2,10 @@ import datetime
 import os
 import re
 from pathlib import Path
-
+import argparse
 import frontmatter
 from aip import AipNlp
-from  frontmatter import Post as FrontmatterPost
+from frontmatter import Post as FrontmatterPost
 
 
 class ContextTagHandler:
@@ -108,7 +108,8 @@ class Post:
         if self.is_update_needed():
             res = self.util.label(self.title, self.content_post.replace('\u200b', ''))
             tags = res['tags']
-            print(f"Post [{self.file_path}] tags=[{tags}], msg={res['msg']}")
+            if res['msg'] != '':
+                print(f" [WARN] hexo frontmatter generator post [{self.file_path}] tags={tags}, msg={res['msg']}")
             new_tags = tags if isinstance(tags, list) else [tags]
 
             # If there are existing tags, merge them with new tags while removing duplicates
@@ -169,9 +170,27 @@ class FrontMatterGenerator:
 
 
 def main():
-    post_dir = os.getenv("POSTS_DIRECTORY")
-    tool = FrontMatterGenerator(post_dir).run()
+    # 创建 ArgumentParser 对象
+    parser = argparse.ArgumentParser()
+
+    # 添加命令参数
+    parser.add_argument('-d', '--directory', type=str, help='Markdown文档目录路径')
+
+    # 解析命令行参数
+    args = parser.parse_args()
+    # 检查目录路径是否存在
+    if args.directory:
+        directory_path = args.directory
+        if os.path.isdir(directory_path):
+            FrontMatterGenerator(directory_path).run()
+        else:
+            parser.error('文档目录路径无效:' + directory_path)
+
+    else:
+        parser.error('请使用`-d`或`--directory`参数提供文档目录路径')
 
 
 if __name__ == "__main__":
-    FrontMatterGenerator('D:/blog/source_blog/_posts').run()
+    print("Welcome use hexo frontmatter generator tool~ ")
+    main()
+    print("Generation complete, goodbye~")

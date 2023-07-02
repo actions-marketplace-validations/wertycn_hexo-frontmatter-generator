@@ -1,0 +1,19 @@
+name: 'Hexo-frontmatter-generator'
+description: 'hexo frontmatter generator tool'
+branding:
+  icon: 'activity'
+  color: 'blue'
+
+inputs:
+  post_dir:
+    description: '文档目录'
+    required: true
+    default: './'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.post_dir }}
+
+  entrypoint: './bin'

@@ -1,10 +1,16 @@
 ---
 auto_generate: true
 date: '2023-06-27 01:47:46'
-tags: []
-title: reveal-md-中文
-updated: '2023-07-01 15:49:20'
-version_id: f7b9ca99067110b7fa79e4c84631b690
+tags:
+- bash
+- docker
+- markdown
+- reveal
+- 幻灯片
+- 文档翻译
+- 软件
+title: reveal-md-中文文档
+updated: '2023-07-02 23:03:42'
 ---
 
 # reveal-md 中文文档

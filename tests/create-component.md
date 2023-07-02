@@ -6,7 +6,7 @@ tags:
 - python
 - streamlit
 title: create-component
-updated: '2023-07-01 15:51:47'
+updated: '2023-07-02 23:03:42'
 version_id: 603a96ffed02f4e5d39eb73c7b17c90f
 ---
 
